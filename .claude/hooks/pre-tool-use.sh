@@ -24,7 +24,7 @@ elif command -v python >/dev/null 2>&1 && python -c 'import json' >/dev/null 2>&
   JSON_PARSER="python"
 elif command -v node >/dev/null 2>&1 && node -e 'process.exit(0)' >/dev/null 2>&1; then
   JSON_PARSER="node"
-elif command -v powershell.exe >/dev/null 2>&1 && powershell.exe -NoProfile -Command '$null = 1' >/dev/null 2>&1; then
+elif command -v powershell.exe >/dev/null 2>&1 && powershell.exe -NoProfile -Command "\$null = 1" >/dev/null 2>&1; then
   JSON_PARSER="powershell.exe"
 else
   echo "BLOCKED: no JSON parser is available for the PreToolUse guard." >&2
@@ -73,13 +73,13 @@ process.stdin.on("end", () => {
       ;;    powershell.exe)
       case "$field" in
         tool_name)
-          printf '%s' "$INPUT" | powershell.exe -NoProfile -Command '$data = [Console]::In.ReadToEnd() | ConvertFrom-Json; [Console]::Write([string]$data.tool_name)'
+          printf '%s' "$INPUT" | powershell.exe -NoProfile -Command "\$data = [Console]::In.ReadToEnd() | ConvertFrom-Json; [Console]::Write([string]\$data.tool_name)"
           ;;
         file_path)
-          printf '%s' "$INPUT" | powershell.exe -NoProfile -Command '$data = [Console]::In.ReadToEnd() | ConvertFrom-Json; [Console]::Write([string]$data.tool_input.file_path)'
+          printf '%s' "$INPUT" | powershell.exe -NoProfile -Command "\$data = [Console]::In.ReadToEnd() | ConvertFrom-Json; [Console]::Write([string]\$data.tool_input.file_path)"
           ;;
         command)
-          printf '%s' "$INPUT" | powershell.exe -NoProfile -Command '$data = [Console]::In.ReadToEnd() | ConvertFrom-Json; [Console]::Write([string]$data.tool_input.command)'
+          printf '%s' "$INPUT" | powershell.exe -NoProfile -Command "\$data = [Console]::In.ReadToEnd() | ConvertFrom-Json; [Console]::Write([string]\$data.tool_input.command)"
           ;;
       esac
       ;;
