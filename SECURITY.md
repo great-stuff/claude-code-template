@@ -42,4 +42,4 @@ We will coordinate a public disclosure date with you once a fix is ready. We fol
 - Enable **GitHub Advanced Security** in your repository settings (Security tab → Code security and analysis) to activate secret scanning and push protection.
 - The pre-commit hook (`.githooks/pre-commit`) blocks common secret patterns locally — activate with `git config core.hooksPath .githooks`.
 - Dependabot keeps dependencies up to date automatically.
-- CodeQL static analysis runs on every push to `main` (activate by adding languages to `.github/workflows/codeql.yml`).
+- `.github/workflows/codeql.yml` is a CodeQL-ready scaffold. Add the project's languages and enable the analysis steps before treating CodeQL as active.

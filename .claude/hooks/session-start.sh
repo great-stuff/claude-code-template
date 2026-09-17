@@ -3,7 +3,7 @@
 #
 # PURPOSE:
 #   1. Surface git state (branch, status) so Claude can confirm the workspace.
-#   2. Warn when the session starts on main so Claude asks before editing.
+#   2. Surface the main-branch rule before an edit is requested.
 #   3. In remote (web) sessions only, install project dependencies.
 #
 # HOW TO EXTEND:
@@ -12,7 +12,7 @@
 set -euo pipefail
 
 # -------------------------------------------------------
-# Always-run: git state and branch-choice prompt
+# Always-run: git state and branch notice
 # -------------------------------------------------------
 echo "=== Session Start ==="
 echo "Project dir : ${CLAUDE_PROJECT_DIR:-$(pwd)}"
@@ -33,26 +33,17 @@ if [ -f "TASKS.md" ]; then
     echo "--- Open tasks (TASKS.md) ---"
     echo "$OPEN_TASKS"
     echo ""
-    echo "Claude: surface these to the user before the branching prompt."
-    echo "If the user picks one, suggest a feature branch name derived from it."
+    echo "Claude: mention these only when the user asks about project work or planning."
     echo ""
   fi
 fi
 
 if [ "$CURRENT_BRANCH" = "main" ] || [ "$CURRENT_BRANCH" = "master" ]; then
-  echo "--- ACTION REQUIRED: session started on $CURRENT_BRANCH ---"
-  echo "Per CLAUDE.md, changes must not be committed directly to $CURRENT_BRANCH."
-  echo "Before the first edit of this session, Claude MUST ask the user:"
-  echo "  1. Continue work on an existing branch? (list below)"
-  echo "  2. Create a new feature branch? (suggest a name based on the task)"
-  echo "  3. Proceed on $CURRENT_BRANCH anyway? (explicit override — rare)"
-  echo ""
-  echo "Existing local branches (other than $CURRENT_BRANCH):"
-  git for-each-ref --sort=-committerdate --format='  %(refname:short)  (last commit: %(committerdate:relative))' refs/heads/ \
-    | grep -v "  $CURRENT_BRANCH  " | head -10 || echo "  (none)"
+  echo "--- Branch notice ---"
+  echo "Current branch: $CURRENT_BRANCH"
+  echo "Claude: before a user-requested edit, commit, or PR action, propose a feature branch."
   echo ""
 fi
-
 # -------------------------------------------------------
 # Remote-only: project dependency installation
 # -------------------------------------------------------

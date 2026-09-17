@@ -9,40 +9,103 @@
 #   change the other. See .claude/README.md for the full rationale.
 set -euo pipefail
 
-# --- jq dependency check ---
-# This hook parses tool input as JSON. Without jq, every guardrail below would
-# silently fail-open. We exit 0 (don't block) but warn loudly so the user notices.
-if ! command -v jq >/dev/null 2>&1; then
-  echo "WARNING: pre-tool-use hook degraded — 'jq' is not installed." >&2
-  echo "         Secret-read and external-fetch guardrails are NOT active." >&2
-  echo "         Install jq (see SETUP.md) to restore protection." >&2
-  exit 0
-fi
-
 # The hook receives tool name and input as JSON on stdin.
 INPUT=$(cat)
-TOOL_NAME=$(echo "$INPUT" | jq -r '.tool_name // empty')
-TOOL_INPUT=$(echo "$INPUT" | jq -r '.tool_input // empty')
 
+# Parse hook input with a tool that is normally present on every supported
+# setup. jq is preferred; Python and Node.js keep the guard available on
+# machines where jq is not installed. Do not fail open: without a parser the
+# hook cannot identify a safe tool call.
+if command -v jq >/dev/null 2>&1 && jq -n true >/dev/null 2>&1; then
+  JSON_PARSER="jq"
+elif command -v python3 >/dev/null 2>&1 && python3 -c 'import json' >/dev/null 2>&1; then
+  JSON_PARSER="python3"
+elif command -v python >/dev/null 2>&1 && python -c 'import json' >/dev/null 2>&1; then
+  JSON_PARSER="python"
+elif command -v node >/dev/null 2>&1 && node -e 'process.exit(0)' >/dev/null 2>&1; then
+  JSON_PARSER="node"
+elif command -v powershell.exe >/dev/null 2>&1 && powershell.exe -NoProfile -Command "\$null = 1" >/dev/null 2>&1; then
+  JSON_PARSER="powershell.exe"
+else
+  echo "BLOCKED: no JSON parser is available for the PreToolUse guard." >&2
+  echo "Install jq, Python, or Node.js, then start a new Claude session." >&2
+  exit 2
+fi
+
+json_field() {
+  local field="$1"
+
+  case "$JSON_PARSER" in
+    jq)
+      case "$field" in
+        tool_name) printf '%s' "$INPUT" | jq -r '.tool_name // empty' ;;
+        file_path) printf '%s' "$INPUT" | jq -r '.tool_input.file_path // empty' ;;
+        command) printf '%s' "$INPUT" | jq -r '.tool_input.command // empty' ;;
+      esac
+      ;;
+    python3|python)
+      printf '%s' "$INPUT" | "$JSON_PARSER" -c '
+import json
+import sys
+
+data = json.load(sys.stdin)
+field = sys.argv[1]
+if field == "tool_name":
+    value = data.get("tool_name", "")
+else:
+    value = data.get("tool_input", {}).get(field, "")
+print(value if isinstance(value, str) else "")
+' "$field"
+      ;;
+    node)
+      printf '%s' "$INPUT" | node -e '
+const chunks = [];
+process.stdin.on("data", chunk => chunks.push(chunk));
+process.stdin.on("end", () => {
+  const data = JSON.parse(Buffer.concat(chunks).toString());
+  const field = process.argv[1];
+  const value = field === "tool_name"
+    ? data.tool_name
+    : data.tool_input?.[field];
+  process.stdout.write(typeof value === "string" ? value : "");
+});
+' "$field"
+      ;;    powershell.exe)
+      case "$field" in
+        tool_name)
+          printf '%s' "$INPUT" | powershell.exe -NoProfile -Command "\$data = [Console]::In.ReadToEnd() | ConvertFrom-Json; [Console]::Write([string]\$data.tool_name)"
+          ;;
+        file_path)
+          printf '%s' "$INPUT" | powershell.exe -NoProfile -Command "\$data = [Console]::In.ReadToEnd() | ConvertFrom-Json; [Console]::Write([string]\$data.tool_input.file_path)"
+          ;;
+        command)
+          printf '%s' "$INPUT" | powershell.exe -NoProfile -Command "\$data = [Console]::In.ReadToEnd() | ConvertFrom-Json; [Console]::Write([string]\$data.tool_input.command)"
+          ;;
+      esac
+      ;;
+  esac
+}
+
+TOOL_NAME=$(json_field tool_name)
 # --- Block reading secrets and credentials ---
 # Mirrors Read(**/.env), Read(**/.ssh/*), Read(**/*.pem), Read(**/*.key) in settings.json.
 if [ "$TOOL_NAME" = "Read" ] || [ "$TOOL_NAME" = "read" ]; then
-  FILE_PATH=$(echo "$TOOL_INPUT" | jq -r '.file_path // empty')
+  FILE_PATH=$(json_field file_path)
   if echo "$FILE_PATH" | grep -qiE '(\.env($|\.)|\.ssh/|\.pem$|\.key$|\.pfx$|\.p12$|credentials|secrets)'; then
-    echo "BLOCKED: Reading sensitive file: $FILE_PATH" >&2
+    echo "BLOCKED: Reading a sensitive file is not allowed." >&2
     exit 2
   fi
 fi
 
 # --- Bash command checks ---
 if [ "$TOOL_NAME" = "Bash" ] || [ "$TOOL_NAME" = "bash" ]; then
-  COMMAND=$(echo "$TOOL_INPUT" | jq -r '.command // empty')
+  COMMAND=$(json_field command)
 
   # Block external fetches (prompt-injection vector).
   # Mirrors Bash(curl *) and Bash(wget *) in settings.json. Catches mid-pipeline
   # uses (e.g. `something | curl ...`) that the prefix glob misses.
   if echo "$COMMAND" | grep -qiE '(^|[ ;&|`(])(curl|wget|fetch)( |$)'; then
-    echo "BLOCKED: External fetch command: $COMMAND" >&2
+    echo "BLOCKED: External fetch command." >&2
     echo "Use WebFetch or ask the user to run this command manually." >&2
     exit 2
   fi
@@ -53,7 +116,7 @@ if [ "$TOOL_NAME" = "Bash" ] || [ "$TOOL_NAME" = "bash" ]; then
   # form. If you legitimately need to recursively delete, do it from a terminal,
   # not from Claude.
   if echo "$COMMAND" | grep -qE '(^|[ ;&|`(])rm[ ]+(-[a-zA-Z]*[rRfF]|--recursive|--force)'; then
-    echo "BLOCKED: Recursive rm command: $COMMAND" >&2
+    echo "BLOCKED: Recursive deletion command." >&2
     echo "Recursive deletes must be run by the user manually." >&2
     exit 2
   fi
