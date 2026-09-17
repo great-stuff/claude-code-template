@@ -45,6 +45,7 @@ Refactor database connection pool
 - PRs should be focused and small — one concern per PR
 - Write a clear description explaining what changed and why
 - Link to relevant issues
+- When ChatGPT Codex authors a PR, end its description with `🤖 Generated with [ChatGPT Codex](https://chatgpt.com/codex)`.
 
 ## Development Principles
 
