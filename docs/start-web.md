@@ -51,7 +51,7 @@ if [ "${CLAUDE_CODE_REMOTE:-}" != "true" ]; then
 fi
 ```
 
-The hook only runs in web sessions — it exits silently on CLI and VS Code.
+The hook runs on every surface to show repository context. Only the remote-only fetch and optional dependency setup run in web sessions.
 
 ### MCP servers on the web
 

@@ -5,22 +5,21 @@
 **Always** show the current branch in the first reply. Use the branch name from the SessionStart hook's git status (the line starting with `##`).
 
 - On a feature branch: `Branch: \`feature/some-task\`` (informational, no action needed)
-- On main: show the branch **and** a branching prompt (see below)
+- On main: show the branch and retain the branch rule for any later change request.
 
-## Branching prompt (main only)
+## Before changing files on main
 
-When the session started on `main`, add a branching choice after the branch line:
+When the user asks to edit files, commit, push, open a pull request, or otherwise change project state while on `main`, add a branching choice before taking action:
 
 1. Continue work on an existing branch (list them if any exist)
 2. Create a new feature branch (suggest a name once the task is known)
-3. Proceed on `main` anyway (explicit override, rare)
+3. Proceed on `main` anyway (explicit override — rare)
 
-Do this even when the user's opening message is unrelated to editing files.
+For questions, reviews, explanations, and other read-only requests, do not present this choice.
 
 ## Open tasks prompt
 
-When the SessionStart hook reports an "Open tasks (TASKS.md)" block, list those open tasks to the user in the first reply — after the branch info. If the user picks one to work on and is on main, derive a short branch name from it and offer that name as option 2 of the branching prompt.
-
+When the SessionStart hook reports an "Open tasks (TASKS.md)" block, mention the open tasks when the user asks about project work or planning. If the user picks one to work on and is on main, derive a short branch name from it and offer that name as option 2 of the branching prompt.
 If the hook does not include an open-tasks block, skip this step silently.
 
 > Note: the exact heading the hook prints lives in `.claude/hooks/session-start.sh`. Match on intent ("there are open tasks listed"), not on the literal string, so the rule and the hook can evolve independently.

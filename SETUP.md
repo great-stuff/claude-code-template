@@ -150,9 +150,9 @@ uv python install 3.13        # install a specific Python version (replaces pyen
 
 Skip if your project does not use Python and you do not need Python CLI tools.
 
-### 6. jq (required by Claude hooks)
+### 6. jq (recommended for Claude hooks)
 
-The `pre-tool-use.sh` hook parses tool input as JSON. Without `jq`, the secret-read and external-fetch guardrails fall back to a degraded mode and emit a warning at every tool call.
+The `pre-tool-use.sh` hook parses tool input as JSON. It uses `jq` when available and otherwise uses Python, Node.js, or Windows PowerShell. At least one is required. If none is available, the hook blocks tool calls rather than silently disabling its guardrails.
 
 ```powershell
 # Windows
@@ -401,16 +401,18 @@ Replace:
 
 ### Adapting permissions for your stack
 
-`.claude/settings.json` ships with pre-approved permissions for **Node.js** (`npm`) and **Python** (`pip`, `pytest`). If your project uses a different stack, add the relevant commands to the `"allow"` list:
+`.claude/settings.json` starts with Git, GitHub CLI, and `pytest` permissions only. When you choose a stack, add only the build, test, and package commands that project needs:
 
 | Stack | Commands to add |
 |---|---|
+| Node.js | `Bash(npm run *)`, `Bash(npm ci)`, `Bash(npm test)`, `Bash(node --version)` |
+| Python | `Bash(pip install *)`, `Bash(pip freeze)`, `Bash(python *)`, `Bash(python3 *)` |
 | Go | `Bash(go build *)`, `Bash(go test *)`, `Bash(go run *)`, `Bash(go mod *)` |
 | Rust | `Bash(cargo build *)`, `Bash(cargo test *)`, `Bash(cargo run *)`, `Bash(cargo clippy *)` |
 | .NET | `Bash(dotnet build *)`, `Bash(dotnet test *)`, `Bash(dotnet run *)` |
 | Ruby | `Bash(bundle install *)`, `Bash(bundle exec *)`, `Bash(rake *)` |
 
-Remove permissions for stacks you do not use to keep the allow-list focused.
+Keep the allow-list focused. Do not add a package-install permission unless the project actually needs it.
 
 ### Adapting VS Code extensions for your stack
 
@@ -441,7 +443,7 @@ the project actually uses.
 
 | Category     | Extensions                                      |
 |--------------|-------------------------------------------------|
-| Images       | `.bmp` `.png` `.jpg` `.jpeg` `.gif` `.webp` `.svg` `.ico` |
+| Images       | `.bmp` `.png` `.jpg` `.jpeg` `.gif` `.webp` `.ico` |
 | Documents    | `.pdf`                                          |
 | Video        | `.mp4` `.mov`                                   |
 | Fonts        | `.ttf` `.woff` `.woff2`                         |

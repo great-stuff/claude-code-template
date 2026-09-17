@@ -10,23 +10,22 @@ jobs:
   validate:
     name: Validate
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout
         uses: actions/checkout@v7
 
-      - name: Confirm CI is running
+      - name: Validate template configuration
         run: |
-          echo "CI running on branch: ${{ github.ref_name }}"
-          echo "Triggered by: ${{ github.event_name }}"
-          echo "Commit: ${{ github.sha }}"
-          echo ""
-          echo "Add project-specific steps below as the project grows:"
-          echo "  - Install dependencies"
-          echo "  - Run linter"
-          echo "  - Run tests"
-          echo "  - Build"
-
+          python3 -m json.tool .claude/settings.json >/dev/null
+          python3 -m json.tool .mcp.json >/dev/null
+          test "$(git ls-files --stage .claude/hooks/pre-tool-use.sh | cut -c1-6)" = "100755"
+          for hook in .githooks/post-checkout .githooks/post-commit .githooks/post-merge .githooks/pre-push; do
+            test "$(git ls-files --stage "$hook" | cut -c1-6)" = "100755"
+          done
+          echo "Template configuration is valid. Add stack-specific checks below."
       # -------------------------------------------------------
       # ADD PROJECT-SPECIFIC STEPS HERE
       # Examples (uncomment and adapt as needed):

@@ -39,7 +39,7 @@ for pattern in "${PATTERNS[@]}"; do
   if [ -n "$matches" ]; then
     echo ""
     echo "BLOCKED: Potential secret detected (pattern: $pattern)"
-    echo "$matches"
+    echo "The matching staged content is not displayed to avoid exposing a real secret."
     FOUND=1
   fi
 done

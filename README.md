@@ -12,7 +12,7 @@ A production-ready scaffold for GitHub projects with Claude Code integration bui
 |---|---|
 | **AI integration** | `CLAUDE.md` project constitution, standing rules, slash commands, skills, MCP config |
 | **Git guardrails** | Pre-commit secret scanner, commit-msg length enforcer, branch naming conventions |
-| **GitHub automation** | CI pipeline, weekly Claude Code docs monitor, Dependabot, CodeQL static analysis |
+| **GitHub automation** | Configuration CI, weekly Claude Code docs monitor, Dependabot, CodeQL-ready workflow |
 | **Security** | Secret scanning, push protection, vulnerability policy, `.gitignore` for credentials |
 | **Documentation** | Concepts guide, setup walkthrough, ADR / runbook / API doc templates |
 | **Binary files** | `.gitattributes` routes images, fonts, and videos through Git LFS automatically |
@@ -62,8 +62,8 @@ your-project-name/
 │       └── session-start.sh   # Runs at the start of every Claude session
 ├── .github/
 │   ├── workflows/
-│   │   ├── ci.yml             # CI pipeline — runs on every push
-│   │   ├── codeql.yml         # Static security analysis — add languages to activate
+│   │   ├── ci.yml             # Configuration CI — add project checks as the codebase grows
+│   │   ├── codeql.yml         # CodeQL-ready workflow — add languages to activate
 │   │   ├── claude-docs-watch.yml  # Weekly check for Claude Code doc changes
 │   │   └── shellcheck.yml     # Lints .claude/hooks/ and .githooks/ on every PR
 │   ├── ISSUE_TEMPLATE/        # Bug report and feature request templates
