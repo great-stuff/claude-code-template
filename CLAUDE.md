@@ -45,7 +45,10 @@ Refactor database connection pool
 - PRs should be focused and small — one concern per PR
 - Write a clear description explaining what changed and why
 - Link to relevant issues
-- When ChatGPT Codex authors a PR, end its description with `🤖 Generated with [ChatGPT Codex](https://chatgpt.com/codex)`.
+- PR attribution is agent-specific:
+  - ChatGPT Codex: end the PR body with `🌀 Generated with [ChatGPT Codex](https://chatgpt.com/codex)`.
+  - Claude Code: keep using `🤖 Generated with Claude Code`.
+  - Other agents: add no attribution unless a project rule assigns one.
 
 ## Development Principles
 
