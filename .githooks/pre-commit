@@ -28,7 +28,10 @@ if [ -z "$STAGED" ]; then
 fi
 
 FOUND=0
-DIFF=$(git diff --cached -U0 | grep '^+' | grep -v '^+++' || true)
+# Skip added lines identical to this hook's own PATTERNS lines, so editing or
+# first-committing the hook does not match itself. Every other line is scanned.
+OWN_PATTERN_LINES=$(sed -n '/^PATTERNS=(/,/^)/p' "$0" | sed 's/^/+/')
+DIFF=$(git diff --cached -U0 | grep '^+' | grep -v '^+++' | grep -vxF -e "$OWN_PATTERN_LINES" || true)
 
 if [ -z "$DIFF" ]; then
   exit 0
