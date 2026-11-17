@@ -21,10 +21,13 @@ jobs:
         run: |
           python3 -m json.tool .claude/settings.json >/dev/null
           python3 -m json.tool .mcp.json >/dev/null
-          test "$(git ls-files --stage .claude/hooks/pre-tool-use.sh | cut -c1-6)" = "100755"
-          for hook in .githooks/post-checkout .githooks/post-commit .githooks/post-merge .githooks/pre-push; do
-            test "$(git ls-files --stage "$hook" | cut -c1-6)" = "100755"
-          done
+          not_exec=$(git ls-files --stage .claude/hooks .githooks | awk '$1 != "100755" {print $4}')
+          if [ -n "$not_exec" ]; then
+            echo "::error::Hook scripts are not executable in the git index:"
+            echo "$not_exec"
+            echo "Fix: git update-index --chmod=+x $(echo "$not_exec" | tr '\n' ' ')"
+            exit 1
+          fi
           echo "Template configuration is valid. Add stack-specific checks below."
       # -------------------------------------------------------
       # ADD PROJECT-SPECIFIC STEPS HERE

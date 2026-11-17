@@ -738,6 +738,13 @@ chmod +x .githooks/pre-commit
 git config core.hooksPath .githooks
 ```
 
+On Windows, `chmod +x` does not change what git stores. Set the bit in the git index instead,
+after `git add`:
+
+```bash
+git update-index --chmod=+x .githooks/pre-commit
+```
+
 > `git config core.hooksPath .githooks` is a local setting — each developer must run it once after cloning. Add it to the clone instructions in `SETUP.md` (already done in this template).
 
 ### Step 3.14 — Create GitHub issue templates
