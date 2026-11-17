@@ -11,14 +11,16 @@ Identify what this spin-off project has added or changed relative to the templat
 
 ### Mode 1: Audit (default — `/harvest` or `/harvest audit`)
 
-1. **Read the baseline.** Open `.claude/template-baseline.md` and note the fork commit, fork date, and inherited file list.
+1. **Read the baseline.** Open `.claude/template-baseline.md` and note the fork commit, fork date, **Last synced** commit, and inherited file list. The comparison point is **Last synced**, or the fork commit if this project has never run `/template-update`.
 
 2. **Detect placeholder denylist.** If the keyword denylist below still contains `CompanyName, InternalToolA, SpaceKeyX`, stop and ask the user to customize it for this project before proceeding. Example prompt: "The denylist still has template placeholders — replace them with this project's company name, internal tools, and space keys."
 
-3. **Diff against baseline.** Compare the current file tree against the inherited file list:
-   - **New files** — not in the baseline at all
-   - **Modified files** — present in baseline but changed (use `git diff <fork-commit> HEAD -- <file>`)
-   - **Deleted files** — in baseline but removed (rarely transferable, but note them)
+3. **Diff against the template at the comparison point.** Read the template from a local clone (ask for its path if a sibling `../claude-code-template` does not exist). A project created with "Use this template" has unrelated history, so template SHAs exist only in the template clone, never in this repo. List the template's files with `git -C <template> ls-tree --name-only -r <comparison-point>`, then:
+   - **New files** — not in the template at the comparison point
+   - **Modified files** — in both, but `git rev-parse HEAD:<file>` differs from `git -C <template> rev-parse <comparison-point>:<file>`; show the difference with `git diff --no-index` on the two versions
+   - **Deleted files** — in the template but removed here (rarely transferable, but note them)
+
+   Comparing against the last sync, not the fork commit, keeps template changes already pulled in by `/template-update` from being offered back to the template.
 
 4. **Consume the harvest queue.** Read `.claude/harvest-queue.md` if it exists. Include queued items alongside diff-discovered items. After audit completes, clear the queue file.
 
@@ -31,7 +33,7 @@ Identify what this spin-off project has added or changed relative to the templat
 6. **Filter for template-worthiness.** Skip items that are:
    - Purely project-specific content (project docs in `docs/deliverables/`)
    - Data files (PDFs, images, inbox contents)
-   - Already in the template (unchanged from baseline)
+   - Already in the template (identical to the template at the comparison point)
 
 7. **Denylist check.** For each candidate, scan its content for keywords from the denylist. Flag any matches: "⚠ Contains project-specific term: '<term>' — review and generalize before transfer."
 

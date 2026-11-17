@@ -52,9 +52,9 @@ your-project-name/
 │   ├── settings.local.json.example  # Template for settings.local.json — copy and fill in
 │   ├── docs-baseline.hash     # SHA-256 of last-reviewed Claude Code changelog
 │   ├── commands/              # Slash commands: /review-code, /commit-message, /pr, /test, /explain, /debug, /security-audit, /write-docs, /task-add, /task-done, /task-list
-│   ├── skills/                # Skills: /adr-new, /avoid-ai-writing, /brainstorm, /changelog, /consistency-check-docs, /diagram, /export-prompt, /harvest, /inbox-process, /release-notes, /sync-template, /troubleshooting
+│   ├── skills/                # Skills: /adr-new, /avoid-ai-writing, /brainstorm, /changelog, /consistency-check-docs, /diagram, /export-prompt, /harvest, /inbox-process, /release-notes, /sync-template, /template-update, /troubleshooting
 │   ├── rules/                 # Standing instructions: branch-audit, code-style, documentation, goal-driven-execution, harvest-flag, mental-models, outbox-capture, session-start, troubleshooting-verification
-│   ├── template-baseline.md   # Fork-time snapshot — inherited files, commit SHA, template URL
+│   ├── template-baseline.md   # Fork-time snapshot and sync state — fork commit, last synced, inherited files
 │   ├── harvest-queue.md       # Transient harvest flag queue (gitignored)
 │   ├── README.md              # Index of commands and skills (keep in sync when adding/removing)
 │   └── hooks/
@@ -94,6 +94,7 @@ your-project-name/
 │   ├── future-state/          # Target design
 │   ├── roadmap/               # Sequencing, phases, milestones
 │   ├── runbooks/              # Operational runbooks
+│   │   └── template-update.md #   Bring template changes into a spin-off
 │   ├── concepts.md            # How repos, branches, environments and Claude Code work
 │   ├── setup-guide.md         # How to create a new project from scratch using this template
 │   ├── start-cli.md           # Getting started: Claude Code CLI
@@ -170,6 +171,7 @@ All AI-assisted branches follow the pattern `claude/<task-id>-<description>` and
 | `/inbox-process` | Walks `_inbox/`, classifies items, and proposes filing destinations |
 | `/release-notes` | Drafts human-facing release notes from git history, grouped by theme |
 | `/sync-template` | Reviews Claude Code release notes and updates the template to stay current |
+| `/template-update` | Brings merged template changes into a spin-off; `status` mode shows which spin-offs are behind |
 | `/troubleshooting` | Evidence-based investigation — verify every entity's identity before building analysis on it |
 
 ---
