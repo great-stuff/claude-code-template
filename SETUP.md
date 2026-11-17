@@ -449,6 +449,24 @@ git config core.hooksPath .githooks
 
 From now on every `git commit` in this repo runs both hooks automatically.
 
+### Copying the template into a new repo on Windows
+
+Windows has no executable bit, and git sets `core.fileMode=false` there. If you copy the
+template's files into a new repo and `git add` them on Windows, the hook scripts are stored
+as `100644` instead of `100755`, and CI fails. Cloning, or creating the repo with GitHub's
+**Use this template**, keeps the modes. After `git add`, set the bit in the git index for every
+hook, from Git Bash:
+
+```bash
+git ls-files .githooks .claude/hooks | xargs git update-index --chmod=+x
+```
+
+Check that every hook shows `100755`:
+
+```bash
+git ls-files -s .githooks .claude/hooks
+```
+
 To bypass a confirmed false positive:
 
 ```bash
