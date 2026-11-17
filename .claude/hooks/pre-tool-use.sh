@@ -103,8 +103,9 @@ if [ "$TOOL_NAME" = "Bash" ] || [ "$TOOL_NAME" = "bash" ]; then
 
   # Block external fetches (prompt-injection vector).
   # Mirrors Bash(curl *) and Bash(wget *) in settings.json. Catches mid-pipeline
-  # uses (e.g. `something | curl ...`) that the prefix glob misses.
-  if echo "$COMMAND" | grep -qiE '(^|[ ;&|`(])(curl|wget|fetch)( |$)'; then
+  # uses (e.g. `something | curl ...`) that the prefix glob misses. `fetch` (the
+  # BSD downloader) is matched only in command position, so `git fetch` passes.
+  if echo "$COMMAND" | grep -qiE '(^|[ ;&|`(])(curl|wget)( |$)|(^|[;&|`(])[[:space:]]*fetch( |$)'; then
     echo "BLOCKED: External fetch command." >&2
     echo "Use WebFetch or ask the user to run this command manually." >&2
     exit 2
