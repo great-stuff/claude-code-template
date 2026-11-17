@@ -238,6 +238,84 @@ This makes the "feature branches only" rule from `CLAUDE.md` enforced server-sid
 
 ---
 
+## More than one GitHub account on one machine (optional)
+
+Skip this section if you use a single GitHub account. It applies when one machine holds, for
+example, a personal account for personal repos and a company account for company-org repos.
+
+### The problem
+
+- The GitHub CLI keeps **one active account per host**, in its own config
+  (`%APPDATA%\GitHub CLI\hosts.yml` on Windows). It applies to every terminal and every folder for
+  that OS user. `gh auth switch` changes it for everything, Claude Code included.
+- A repo that signs in through `gh auth git-credential` pushes as whichever account is active.
+  That helper ignores a requested `username=` and always answers with the active account, so it
+  cannot be pinned per repo (tested with gh 2.89.0).
+- Git Credential Manager stores its own login, separate from gh: a second, hidden account choice.
+
+### The fix: pin git per repo, take the token from gh when needed
+
+Prerequisite: run `gh auth login` once per account. `gh auth token -u <account>` must then print a
+token.
+
+In each repo, set repo-local config (it is not committed). Run this from Git Bash; on Windows the
+helper runs in Git for Windows' bundled `sh`, and PowerShell needs different quoting:
+
+```bash
+git config --local credential.helper ''
+git config --local --add credential.helper '!f() { test "$1" = get && echo username=<account> && echo "password=$(gh auth token -u <account>)"; }; f'
+```
+
+- The empty first entry clears inherited helpers such as Git Credential Manager, so only this one
+  answers.
+- It answers only `get`; `store` and `erase` do nothing. No token is written to git config: gh
+  reads it from the OS keyring each time.
+
+Check it with `git ls-remote` in each repo, once with each account active in gh. All four runs
+must succeed:
+
+```bash
+git ls-remote --heads origin main
+```
+
+### What this does not cover
+
+- **gh commands** (`gh pr create`, `gh repo edit`, ...) still use the active account; gh has no
+  per-folder account. Keep the account you use most as the active one, and for a repo of the other
+  account, prefix the command instead of switching:
+
+  ```bash
+  GH_TOKEN=$(gh auth token -u <other-account>) gh pr create
+  ```
+
+- **Token scopes are per account.** Pushing changes under `.github/workflows/` needs the `workflow`
+  scope on that repo's account:
+
+  ```bash
+  gh auth refresh -u <account> -s workflow
+  ```
+
+- **Commit author** (`user.name`, `user.email`) is separate from the sign-in account. Set it per
+  repo with `git config --local` if the company wants its own e-mail on commits.
+
+### Suggested: a user-level Claude Code rule
+
+Claude Code runs `gh` as the active account too. A short rule in your **user-level** Claude config
+(`~/.claude/CLAUDE.md`, or the folder `CLAUDE_CONFIG_DIR` points to), not in the repo, keeps it
+from switching accounts. Adapt the placeholders to your machine:
+
+```markdown
+## GitHub accounts on this machine
+
+- <path-to-personal-repos> → `<personal-account>`; <path-to-company-repos> → `<company-account>`.
+- Never run `gh auth switch`. For a repo whose account is not the active one, prefix gh commands
+  with `GH_TOKEN=$(gh auth token -u <account>)`.
+- "Could not resolve to a Repository" or "not found" from gh usually means the wrong account:
+  rerun with the right prefix.
+```
+
+---
+
 ## Repository Layout
 
 ```
