@@ -37,6 +37,7 @@ Newer format with YAML frontmatter, supporting files, and subagent execution. Ea
 | `/inbox-process` | Walks `_inbox/`, classifies items, and proposes filing destinations |
 | `/release-notes` | Drafts human-facing release notes from git history, grouped by theme |
 | `/sync-template` | Reviews Claude Code release notes and updates the template to stay current |
+| `/template-update` | Brings merged template changes into a spin-off; `status` mode shows which spin-offs are behind |
 | `/troubleshooting` | Evidence-based investigation — verify every entity's identity before building analysis on it |
 
 ## Optional upstream skill packs
@@ -88,5 +89,5 @@ Shell scripts the Claude Code harness invokes around tool calls and session even
 | `settings.local.json.example` | Yes | Format reference for `settings.local.json` |
 | `.gitignore` | Yes | Ignores local-only files inside `.claude/` (`settings.local.json`, `harvest-queue.md`, `.DS_Store`) |
 | `docs-baseline.hash` | Yes | SHA-256 of the last-reviewed Claude Code changelog — set from the hash published by `claude-docs-watch` |
-| `template-baseline.md` | Yes | Fork-time snapshot: inherited files, commit SHA, template URL |
+| `template-baseline.md` | Yes | Fork-time snapshot and sync state: fork commit, last synced commit, deferred and declined items, inherited files. Sync state is maintained by `/template-update` |
 | `harvest-queue.md` | No (gitignored) | Transient queue populated by the harvest-flag rule — present only between flag and `/harvest` run |

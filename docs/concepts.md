@@ -702,16 +702,15 @@ A private GitHub repo is very safe if you use it correctly. The platform itself 
 
 ## 17. The Template Feedback Loop
 
-A template is only useful if it stays current. Three mechanisms keep knowledge flowing in the right directions:
+A template is only useful if it stays current. Four mechanisms keep knowledge flowing in the right directions:
 
-```
-Claude Code docs ──sync-template──▶ Template repo ──fork──▶ Spin-off project
-                                        ▲                         │
-                                        └────── harvest ──────────┘
-                                                                  │
-                                                         _outbox (capture)
-                                                                  ▼
-                                                        Future global library
+```mermaid
+flowchart LR
+  D[Claude Code docs] -- sync-template --> T[Template repo]
+  T -- fork --> S[Spin-off project]
+  T -- template-update --> S
+  S -- harvest --> T
+  S -- "_outbox (capture)" --> L[Future global library]
 ```
 
 ### sync-template (inbound)
@@ -733,6 +732,12 @@ When the template is forked into a real project, that project evolves — new ru
 The `/harvest flag` subcommand and the `harvest-flag.md` rule enable conversational bookmarking during normal work. When you say "save this for the template" or similar, Claude appends an entry to the harvest queue. The next `/harvest audit` picks it up alongside diff-discovered changes.
 
 Direction: spin-off project back into the template.
+
+### template-update (template to spin-off)
+
+A spin-off does not receive template changes by itself. The `/template-update` skill, run in the spin-off, lists the template pull requests merged since the last sync and decides per file: take the template's file as is, merge the change into the spin-off's own version, or skip it. Each template PR states what spin-offs need in its **Downstream (spinoffs)** section. The skill records the last synced commit and any deferred or declined items in `.claude/template-baseline.md`, which `/harvest` also uses so it does not offer synced template changes back. A read-only `status` mode, run in the template, shows which spin-offs are behind. Step-by-step manual: `docs/runbooks/template-update.md`.
+
+Direction: template into spin-off projects.
 
 ### library (cross-project archive)
 

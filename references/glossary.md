@@ -73,7 +73,8 @@ Format: `- **Term** — definition. *(expansion if acronym)*`
 
 ## T
 
-- **template-baseline** — A stub file (`.claude/template-baseline.md`) recording the fork commit SHA, fork date, and inherited file list at the time a project was created from this template. Used by `/harvest` to diff the spin-off against its origin.
+- **template-baseline** — A stub file (`.claude/template-baseline.md`) recording the fork commit SHA, fork date, and inherited file list at the time a project was created from this template, plus a **Sync state** section (last synced commit, deferred and declined items) maintained by `/template-update`. Used by `/harvest` and `/template-update` to compare the spin-off with the template.
+- **template-update** — The `/template-update` skill. Brings template changes merged since the last sync into a spin-off, deciding per file between sync, merge by intent and skip; a read-only `status` mode, run in the template, shows which spin-offs are behind. The downstream counterpart of *harvest*. Manual: `docs/runbooks/template-update.md`.
 - **troubleshooting-verification** — Standing rule (`.claude/rules/troubleshooting-verification.md`) requiring every entity (process, driver, service, file, version) to be verified against an authoritative source before it feeds analysis, with re-verification on each new finding. Full method lives in the `/troubleshooting` skill.
 
 ## U

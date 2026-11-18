@@ -351,6 +351,7 @@ your-project-name/
 │   │   ├── inbox-process/SKILL.md # /inbox-process — walk _inbox/ and propose filing
 │   │   ├── release-notes/SKILL.md # /release-notes — draft human-facing release notes from git history
 │   │   ├── sync-template/SKILL.md # /sync-template — reviews Claude Code docs, updates template
+│   │   ├── template-update/SKILL.md # /template-update — bring template changes into a spin-off
 │   │   └── troubleshooting/SKILL.md # /troubleshooting — evidence-based investigation method
 │   ├── rules/
 │   │   ├── branch-audit.md        # Mandatory git+intent cross-checks before recommending branch deletion
@@ -362,7 +363,7 @@ your-project-name/
 │   │   ├── outbox-capture.md      # When to save snippets to _outbox/
 │   │   ├── session-start.md       # First-reply behavior (open tasks, branching prompt)
 │   │   └── troubleshooting-verification.md # Verify entity identity before building analysis on it
-│   ├── template-baseline.md       # Fork-time snapshot — inherited files, commit SHA, template URL
+│   ├── template-baseline.md       # Fork-time snapshot and sync state — fork commit, last synced, inherited files
 │   ├── harvest-queue.md           # Transient harvest flag queue (gitignored)
 │   └── hooks/
 │       ├── pre-tool-use.sh        # Blocks secrets, external fetches, rm -r* (defense-in-depth)
@@ -403,6 +404,7 @@ your-project-name/
 │   ├── future-state/              # Target design
 │   ├── roadmap/                   # Sequencing, phases, milestones
 │   ├── runbooks/                  # Operational runbooks
+│   │   └── template-update.md     #   Bring template changes into a spin-off
 │   ├── concepts.md                # How repos, branches, environments and Claude Code work
 │   ├── setup-guide.md             # How to create a new project from scratch using this template
 │   ├── start-cli.md               # Getting started: Claude Code CLI
